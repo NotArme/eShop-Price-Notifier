@@ -100,18 +100,37 @@ def CacheGameData(gId, gData):
     CheckForDataFolder()
     with open(f"gameData/{gId}.json", "w+") as jsonfile:
         json.dump(gData, jsonfile)
+        jsonfile.close()
 
 
-
-
+def RecentDataExists(id):
+    if os.path.exists(f"./gameData/{id}.json"):
+        with open(f"./gameData/{id}.json", "r") as gameFile:
+            game = json.load(gameFile)
+            datetimeForEvaluation = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=23)
+            if parser.parse(game["received date"]) > datetimeForEvaluation:
+                gameFile.close()
+                return True
+            #current data is old, should re download
+            timedata = parser.parse(game["received date"], ignoretz=True)
+            timenow = datetime.datetime.now(datetime.timezone.utc)
+            gameFile.close()
+    return False
 
 
 def Main():
-    gameId: int = 1336
-    tree = GetPage(gameId)
-    gameData = GetGameData(gameId, tree, 365)
+    if os.path.exists("./gameData/wishlist.json"):
+        with open("./gameData/wishlist.json", "r+") as wishlistFile:
+            wishlist = json.load(wishlistFile)
+            wishlistFile.close()
 
-    CacheGameData(gameId, gameData)
+    for game in wishlist:
+
+        if (RecentDataExists(game["gameId"]) == False):
+            tree = GetPage(game["gameId"])
+            gameData = GetGameData(game["gameId"], tree, 365)
+
+            CacheGameData(game["gameId"], gameData)
 
 if __name__ == "__main__":
     Main()
