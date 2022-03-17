@@ -1,3 +1,5 @@
+import os
+
 from dataclasses import replace
 import json
 import requests
@@ -19,24 +21,8 @@ def GetPage(gameId: int):
     url = "https://eshop-prices.com/games/" + str(gameId) + "?currency=BRL"
     htmlpage = requests.get(url, headers=userAgent)
 
-    
     tree = html.fromstring(htmlpage.content)
-    gameName = GetGameName(tree)
-    imageBytes = GetImage(tree)
-    cp = GetLowestPrice(tree)
-    ap = GetAveragePrice(365, gameId)
-
-    gameData = {
-        "game": gameName,
-        "country": cp["country"],
-        "lowest price": cp["price"],
-        "average price": ap,
-        "received date": str(datetime.datetime.now(datetime.timezone.utc))
-    }
-
-    with open(f"gameData/{gameId}.json", "w+") as jsonfile:
-        json.dump(gameData, jsonfile)
-    
+    return tree
 
 def GetGameName(tree):
     gameNameQuery = '//div[@class="hero game-hero"]/div[2]//h1/text()'
@@ -85,17 +71,47 @@ def GetAveragePrice(daysToEvaluate: int, gameId: int):
 
     return averagePrice
 
-
-
 #def ShouldNotify
     #return bool
     #true if cheap
 
+def CheckForDataFolder():
+    if os.path.exists("./gameData"):
+        return
+    os.makedirs("./gameData")
+
+def GetGameData(gameId, tree, daysToEvaluate):
+    gameName = GetGameName(tree)
+    imageBytes = GetImage(tree)
+    cp = GetLowestPrice(tree)
+    ap = GetAveragePrice(daysToEvaluate, gameId)
+
+    gameData = {
+        "game": gameName,
+        "country": cp["country"],
+        "lowest price": cp["price"],
+        "average price": ap,
+        "received date": str(datetime.datetime.now(datetime.timezone.utc))
+    }
+    
+    return gameData
+
+def CacheGameData(gId, gData):
+    CheckForDataFolder()
+    with open(f"gameData/{gId}.json", "w+") as jsonfile:
+        json.dump(gData, jsonfile)
+
+
+
+
+
 
 def Main():
-    gameId: int = 1566
-    
-    GetPage(gameId)
+    gameId: int = 1336
+    tree = GetPage(gameId)
+    gameData = GetGameData(gameId, tree, 365)
+
+    CacheGameData(gameId, gameData)
 
 if __name__ == "__main__":
     Main()
