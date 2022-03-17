@@ -112,8 +112,6 @@ def RecentDataExists(id):
                 gameFile.close()
                 return True
             #current data is old, should re download
-            timedata = parser.parse(game["received date"], ignoretz=True)
-            timenow = datetime.datetime.now(datetime.timezone.utc)
             gameFile.close()
     return False
 
