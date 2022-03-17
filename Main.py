@@ -1,12 +1,13 @@
-import os
+#other files from repo
+from LocalStorage import *
 
-from dataclasses import replace
+#json and html handling
 import json
 import requests
+import ast
 from lxml import html
 
-import ast
-
+#time stuff
 import datetime
 from dateutil import parser
 
@@ -72,13 +73,9 @@ def GetAveragePrice(daysToEvaluate: int, gameId: int):
     return averagePrice
 
 #def ShouldNotify
+    #todo
     #return bool
-    #true if cheap
-
-def CheckForDataFolder():
-    if os.path.exists("./gameData"):
-        return
-    os.makedirs("./gameData")
+    #true if cheaper than price marked on wishlist
 
 def GetGameData(gameId, tree, daysToEvaluate):
     gameName = GetGameName(tree)
@@ -96,31 +93,10 @@ def GetGameData(gameId, tree, daysToEvaluate):
     
     return gameData
 
-def CacheGameData(gId, gData):
-    CheckForDataFolder()
-    with open(f"gameData/{gId}.json", "w+") as jsonfile:
-        json.dump(gData, jsonfile)
-        jsonfile.close()
-
-
-def RecentDataExists(id):
-    if os.path.exists(f"./gameData/{id}.json"):
-        with open(f"./gameData/{id}.json", "r") as gameFile:
-            game = json.load(gameFile)
-            datetimeForEvaluation = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=23)
-            if parser.parse(game["received date"]) > datetimeForEvaluation:
-                gameFile.close()
-                return True
-            #current data is old, should re download
-            gameFile.close()
-    return False
-
 
 def Main():
-    if os.path.exists("./gameData/wishlist.json"):
-        with open("./gameData/wishlist.json", "r+") as wishlistFile:
-            wishlist = json.load(wishlistFile)
-            wishlistFile.close()
+    
+    wishlist = GetWishlist()
 
     for game in wishlist:
 
