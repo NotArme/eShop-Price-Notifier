@@ -2,22 +2,27 @@ from time import sleep
 import eShopPage
 import LocalStorage
 
-def UpdateLocalGameDB():
+def UpdateLocalGameDB(attemptsToTry):
     #initialazing some stuff
     gameTitles: dict[str, str] = {}
     badResponseStreak: int = 0
     currentGameId = 1
+    tryCount = 0
 
     #get current cache
     gameTitles = LocalStorage.LoadGameList()
 
-    while badResponseStreak < 5 and currentGameId <= 100:
+    while badResponseStreak < 5 and tryCount < attemptsToTry:
+        
         print(f"\nTrying Id {currentGameId} ----- ", end=' ')
         if gameTitles.get(str(currentGameId), f"{currentGameId}_not_found") != f"{currentGameId}_not_found":
             print(f"Id {currentGameId}: found on cache", end= " ")
             badResponseStreak = 0
             currentGameId += 1
             continue
+
+        tryCount += 1
+        
         pageTree, pageResponse = eShopPage.GetPage(currentGameId)
         if pageResponse.status_code != 200:
             if pageResponse.status_code == 429:
@@ -40,4 +45,4 @@ def UpdateLocalGameDB():
     LocalStorage.CacheGameList(gameTitles)
     print("\n\nProcess Completed :)")
 
-UpdateLocalGameDB()
+UpdateLocalGameDB(1000)
