@@ -16,7 +16,21 @@ def UpdateLocalGameDB(attemptsToTry):
     gameTitles = LocalStorage.LoadGameList()
 
     #web scrape loop
-    while badResponseStreak < 5 and tryCount < attemptsToTry:
+    while badResponseStreak < 40 and tryCount < attemptsToTry:
+        if currentGameId == 503:
+            currentGameId = 536
+            #for some reason id 503~535 simply doesn't exist, so im just ignoring them
+        if currentGameId == 689:
+            currentGameId = 721
+            #same as above
+        if currentGameId == 976:
+            currentGameId = 1007
+            #same as above
+        if currentGameId == 3518:
+            currentGameId = 3549
+            #same as above
+
+
         print(f"\nTrying Id {currentGameId} ----- ", end=' ')
         if gameTitles.get(str(currentGameId), f"{currentGameId}_not_found") != f"{currentGameId}_not_found":
             print(f"Id {currentGameId}: found on cache", end= " ")
@@ -53,4 +67,4 @@ def UpdateLocalGameDB(attemptsToTry):
     LocalStorage.CacheGameList(gameTitles)
     print("\n\nProcess Completed :)")
 
-UpdateLocalGameDB(1000)
+UpdateLocalGameDB(3000)
