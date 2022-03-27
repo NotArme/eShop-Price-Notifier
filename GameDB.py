@@ -26,6 +26,24 @@ def UpdateLocalGameDB(attemptsToTry):
         if currentGameId == 976:
             currentGameId = 1007
             #same as above
+        if currentGameId == 1488:
+            currentGameId = 1518
+            #same as above
+        if currentGameId == 1852:
+            currentGameId = 1884
+            #same as above
+        if currentGameId == 2185:
+            currentGameId = 2215
+            #same as above
+        if currentGameId == 2762:
+            currentGameId = 2794
+            #same as above
+        if currentGameId == 2993:
+            currentGameId = 3025
+            #same as above
+        if currentGameId == 3186:
+            currentGameId = 3218
+            #same as above
         if currentGameId == 3518:
             currentGameId = 3549
             #same as above
