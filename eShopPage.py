@@ -23,17 +23,21 @@ def GetPage(gameId: int):
     htmlpage = requests.get(url, headers=userAgent)
 
     tree = html.fromstring(htmlpage.content)
-    return tree
+    return tree, htmlpage
 
 def GetGameName(tree):
     gameNameQuery = '//div[@class="hero game-hero"]/div[2]//h1/text()'
     gameName = tree.xpath(gameNameQuery)
     return gameName[0]
 
-def GetImage(tree):
+#probably not useful actually, found a better method
+def GetGameImageFromTree(tree):
     gameImageQuery = '//div[@class="hero game-hero"]/div[2]//picture/source[@type="image/jpeg"]/@srcset'
     gameImageLink = tree.xpath(gameImageQuery)
     return gameImageLink[0]
+
+def GetGameImageLink(gameId):
+    return f"https://images.eshop-prices.com/games/{gameId}/120w.jpeg"
 
 def GetLowestPrice(tree):
     countryAndPriceQuery = '//table[@class="prices-table"]/tbody/tr[1]/td[2]/text() | //table[@class="prices-table"]/tbody/tr[1]/td[4]/text() | //table[@class="prices-table"]/tbody/tr[1]/td[4]//div[@class="discounted"]/text()'
@@ -96,7 +100,7 @@ def GetGameData(gameId, tree, daysToEvaluate):
 def LoadWishlist(wishlist):
     for game in wishlist:
         if (RecentDataExists(game["gameId"]) == False):
-            tree = GetPage(game["gameId"])
+            tree = GetPage(game["gameId"])[0]
             gameData = GetGameData(game["gameId"], tree, 365)
 
             CacheGameData(game["gameId"], gameData)
