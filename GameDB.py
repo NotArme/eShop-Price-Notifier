@@ -1,4 +1,5 @@
 from time import sleep
+
 import eShopPage
 import LocalStorage
 
@@ -6,6 +7,7 @@ def UpdateLocalGameDB(attemptsToTry):
     batchSize = 10
 
     #initialazing some stuff
+    session = eShopPage.CreateSession()
     gameTitles: dict[str, str] = {}
     ignoreList = []
     currentGameId = 1
@@ -35,7 +37,7 @@ def UpdateLocalGameDB(attemptsToTry):
             currentGameId += 1
             continue
         tryCount += 1
-        pageTree, pageResponse = eShopPage.GetPage(currentGameId)
+        pageTree, pageResponse = eShopPage.GetPage(currentGameId, session)
         if pageResponse.status_code != 200:
             if pageResponse.status_code == 429:
                 ra = pageResponse.headers["Retry-After"]

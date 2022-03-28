@@ -1,6 +1,3 @@
-from operator import truediv
-from re import search
-from eShopPage import LoadWishlist
 import LocalStorage
 
 import sys
