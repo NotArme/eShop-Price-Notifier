@@ -7,6 +7,8 @@ from dateutil import parser
 import datetime
 import json
 import requests
+
+import pickle
 from time import sleep
 
 
@@ -65,6 +67,20 @@ def LoadGameList():
             return gamedb
     else:
         return {}
+
+def CacheIgnoreList(ignoreList):
+    CheckForDataFolder()
+    with open(f"gameData/.404list", "wb") as ignoreListFile:
+        pickle.dump(ignoreList, ignoreListFile)
+        ignoreListFile.close()
+
+def LoadIgnoreList():
+    CheckForDataFolder()
+    if os.path.exists("./gameData/.404list"):
+        with open(f"gameData/.404list", "rb") as ignoreListFile:
+            list = pickle.load(ignoreListFile)
+            return list
+    return []
 
 def GetWishlist():
     if os.path.exists("./gameData/wishlist.json"):

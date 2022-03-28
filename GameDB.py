@@ -7,6 +7,7 @@ def UpdateLocalGameDB(attemptsToTry):
 
     #initialazing some stuff
     gameTitles: dict[str, str] = {}
+    ignoreList = []
     currentGameId = 1
     badResponseStreak = 0
     tryCount = 0
@@ -14,44 +15,22 @@ def UpdateLocalGameDB(attemptsToTry):
 
     #get current cache
     gameTitles = LocalStorage.LoadGameList()
+    ignoreList = LocalStorage.LoadIgnoreList()
 
     #web scrape loop
     while badResponseStreak < 40 and tryCount < attemptsToTry:
-        if currentGameId == 503:
-            currentGameId = 536
-            #for some reason id 503~535 simply doesn't exist, so im just ignoring them
-        if currentGameId == 689:
-            currentGameId = 721
-            #same as above
-        if currentGameId == 976:
-            currentGameId = 1007
-            #same as above
-        if currentGameId == 1488:
-            currentGameId = 1518
-            #same as above
-        if currentGameId == 1852:
-            currentGameId = 1884
-            #same as above
-        if currentGameId == 2185:
-            currentGameId = 2215
-            #same as above
-        if currentGameId == 2762:
-            currentGameId = 2794
-            #same as above
-        if currentGameId == 2993:
-            currentGameId = 3025
-            #same as above
-        if currentGameId == 3186:
-            currentGameId = 3218
-            #same as above
-        if currentGameId == 3518:
-            currentGameId = 3549
-            #same as above
-
+        if ignoreList:
+            if currentGameId in ignoreList:
+                print(f"\nId {currentGameId}: at some point answered 404, will be ignored", end= " ")
+                currentGameId += 1
+                continue
 
         print(f"\nTrying Id {currentGameId} ----- ", end=' ')
         if gameTitles.get(str(currentGameId), f"{currentGameId}_not_found") != f"{currentGameId}_not_found":
             print(f"Id {currentGameId}: found on cache", end= " ")
+            if badResponseStreak > 0:
+                AddIdsToIgnoreList(currentGameId, badResponseStreak, ignoreList)
+                badResponseStreak = 0
             badResponseStreak = 0
             currentGameId += 1
             continue
@@ -69,7 +48,9 @@ def UpdateLocalGameDB(attemptsToTry):
             currentGameId += 1
             continue
         else:
-            badResponseStreak = 0
+            if badResponseStreak > 0:
+                AddIdsToIgnoreList(currentGameId, badResponseStreak, ignoreList)
+                badResponseStreak = 0
             gameTitles[currentGameId] = eShopPage.GetGameName(pageTree)
             print(f"Id {currentGameId}: Downloaded Title: {gameTitles[currentGameId]}", end=' ')
             imglink = eShopPage.GetGameImageLink(currentGameId)
@@ -79,10 +60,19 @@ def UpdateLocalGameDB(attemptsToTry):
         if batchCount >= batchSize:
             batchCount = 0
             print("\ncacheing past downloads...\n")
+            LocalStorage.CacheIgnoreList(ignoreList)
             LocalStorage.CacheGameList(gameTitles)
     
     print("\ncacheing past downloads...\n")
     LocalStorage.CacheGameList(gameTitles)
     print("\n\nProcess Completed :)")
+
+def AddIdsToIgnoreList(id, badResponses, list):
+    while badResponses > 0:
+        id -= 1
+        badResponses -= 1
+        list.append(id)
+    LocalStorage.CacheIgnoreList(list)
+
 
 UpdateLocalGameDB(3000)
