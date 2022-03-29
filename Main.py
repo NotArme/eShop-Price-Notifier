@@ -96,19 +96,17 @@ class SearchBarTextField(QtWidgets.QLineEdit):
 
     def SearchPressed(self):
         searchList = SearchGameList(allGames, self.text(), self.associatedList)
-        if "dontUpdateSearch" in searchList:
-            return
         UpdateListItems(self.associatedList, searchList)
 
 
 class GameItemOnList(QtWidgets.QWidget):
-    def __init__(self, id, title):
+    def __init__(self, id, title: str):
         super().__init__()
         self.layout = QtWidgets.QHBoxLayout(self)
         self.layout.setContentsMargins(10,0,10,0)
         self.setMaximumSize(10000, 50)
 
-        self.title = QtWidgets.QLabel(title)
+        self.title = QtWidgets.QLabel(title.encode('latin1').decode('utf8'))
         self.layout.addWidget(self.title)
         self.wishlistButton = QtWidgets.QPushButton("<3")
         self.wishlistButton.setFixedSize(20, 20)
@@ -132,6 +130,10 @@ def AddItemsToList(listWidg: QtWidgets.QListWidget, gameListToShow):
         listWidg.setItemWidget(itemlist, currentgamewidget)
 
 def UpdateListItems(listWidget: QtWidgets.QListWidget, updatedList: list):
+    
+    if "dontUpdateSearch" in updatedList:
+        return
+
     listWidget.setVisible(False)
     listWidget.setUpdatesEnabled(False)
 
@@ -143,11 +145,14 @@ def UpdateListItems(listWidget: QtWidgets.QListWidget, updatedList: list):
 
 def SearchGameList(gameList: dict, searchTerm: str, listWidget: ListWidget):
     searchResult = {}
+
+    #cover cases where search is being called with the same search terms as last time
     if listWidget.latestSearch == searchTerm:
         searchResult["dontUpdateSearch"] = "true"
         return searchResult
     listWidget.latestSearch = searchTerm
 
+    #if empty, just return the original full list
     if searchTerm == "":
         return allGames
 
