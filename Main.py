@@ -1,9 +1,13 @@
+from sqlite3 import connect
 import LocalStorage
 
 import sys
 from PySide6 import QtWidgets, QtCore, QtGui
 
 searchBarHeight = 30
+
+allGames =  LocalStorage.LoadGameList()
+
 
 class MyWidgetV(QtWidgets.QWidget):
     def __init__(self):
@@ -21,19 +25,26 @@ class MyWidgetH(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
-
         self.layout = QtWidgets.QHBoxLayout(self)
 
 class LeftHalfWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.addWidget(SearchBarWidget())
-        self.layout.addWidget(ListWidget())
+
+        gameListWidget = ListWidget()
+        gameListSearchBarWidget = SearchBarWidget(gameListWidget)
+
+        self.layout.addWidget(gameListSearchBarWidget)
+        self.layout.addWidget(gameListWidget)
 
 class SearchBarWidget(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, associatedList):
         super().__init__()
+
+        self.associatedList = associatedList
+        self.latestSearchedTerm = ""
+
         self.setMaximumHeight(searchBarHeight)
         
         self.setContentsMargins(0,0,0,0)
@@ -42,7 +53,7 @@ class SearchBarWidget(QtWidgets.QWidget):
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0,0,0,0)
 
-        self.layout.addWidget(SearchBarTextField())
+        self.layout.addWidget(SearchBarTextField(self.associatedList))
         self.layout.addWidget(SearchBarButton())
 
 class SearchBarButton(QtWidgets.QPushButton):
@@ -62,22 +73,32 @@ class SearchBarButton(QtWidgets.QPushButton):
         self.setIcon(QtGui.QIcon("./ui/search-icon.svg"))
         self.setIconSize(QtCore.QSize(searchBarHeight*0.75, searchBarHeight*0.75))
         
+        
 
 class SearchBarTextField(QtWidgets.QLineEdit):
-    def __init__(self):
+    def __init__(self, associatedList: QtWidgets.QListWidget):
         super().__init__()
 
         self.setStyleSheet(
             """QLineEdit{
-                background-color: #ffeffc;
+                background-color: #fff9fe;
                 border: none;
                 border-top-left-radius: 5px;
                 border-bottom-left-radius: 5px;
                 }"""
         )
+        self.associatedList = associatedList
 
         self.setFixedHeight(searchBarHeight)
         self.setContentsMargins(0,0,0,0)
+
+        self.returnPressed.connect(self.SearchPressed)
+
+    def SearchPressed(self):
+        searchList = SearchGameList(allGames, self.text(), self.associatedList)
+        if "dontUpdateSearch" in searchList:
+            return
+        UpdateListItems(self.associatedList, searchList)
 
 
 class GameItemOnList(QtWidgets.QWidget):
@@ -97,22 +118,52 @@ class ListWidget(QtWidgets.QListWidget):
     def __init__(self):
         super().__init__()
         self.setAlternatingRowColors(True)
-        
-        allGames =  LocalStorage.LoadGameList()
 
-        for id in allGames:
-            currentgamewidget = GameItemOnList(id, allGames[id])
-            itemlist = QtWidgets.QListWidgetItem()
-            itemlist.setSizeHint(QtCore.QSize(10, 25))
-            self.addItem(itemlist)
-            self.setItemWidget(itemlist, currentgamewidget)
+        self.latestSearch = ""
 
+        AddItemsToList(self, allGames)
+
+def AddItemsToList(listWidg: QtWidgets.QListWidget, gameListToShow):
+    for id in gameListToShow:
+        itemlist = QtWidgets.QListWidgetItem()
+        itemlist.setSizeHint(QtCore.QSize(10, 25))
+        currentgamewidget = GameItemOnList(id, gameListToShow[id])
+        listWidg.addItem(itemlist)
+        listWidg.setItemWidget(itemlist, currentgamewidget)
+
+def UpdateListItems(listWidget: QtWidgets.QListWidget, updatedList: list):
+    listWidget.setVisible(False)
+    listWidget.setUpdatesEnabled(False)
+
+    listWidget.clear()
+    AddItemsToList(listWidget, updatedList)
+
+    listWidget.setUpdatesEnabled(True)
+    listWidget.setVisible(True)
+
+def SearchGameList(gameList: dict, searchTerm: str, listWidget: ListWidget):
+    searchResult = {}
+    if listWidget.latestSearch == searchTerm:
+        searchResult["dontUpdateSearch"] = "true"
+        return searchResult
+    listWidget.latestSearch = searchTerm
+
+    if searchTerm == "":
+        return allGames
+
+    for key in gameList:
+        if searchTerm.lower() in gameList[str(key)].lower():
+            searchResult[str(key)] = gameList[str(key)]
+    return searchResult
 
 def Main():
     app = QtWidgets.QApplication([])
     
 
     widget = MyWidgetH()
+    widget.setObjectName("mainwindow")
+
+    widget.setStyleSheet(" QWidget#mainwindow{ background-color: #ffeeea;} ")
     widget.setWindowTitle("eShop Wishlist")
     widget.layout.addWidget(LeftHalfWidget())
     widget.layout.addWidget(MyWidgetV())
