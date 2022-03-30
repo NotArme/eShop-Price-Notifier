@@ -53,12 +53,18 @@ class SearchBarWidget(QtWidgets.QWidget):
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0,0,0,0)
 
-        self.layout.addWidget(SearchBarTextField(self.associatedList))
-        self.layout.addWidget(SearchBarButton())
+        self.textField = SearchBarTextField(self.associatedList)
+        self.button = SearchBarButton(self.associatedList, self.textField)
+
+        self.layout.addWidget(self.textField)
+        self.layout.addWidget(self.button)
 
 class SearchBarButton(QtWidgets.QPushButton):
-    def __init__(self):
+    def __init__(self, associatedList: QtWidgets.QListWidget, textField: QtWidgets.QLineEdit):
         super().__init__()
+        self.associatedList = associatedList
+        self.textField = textField
+
         self.setFixedSize(searchBarHeight*1.5, searchBarHeight)
         self.setStyleSheet(
             """QPushButton { 
@@ -72,12 +78,20 @@ class SearchBarButton(QtWidgets.QPushButton):
         )
         self.setIcon(QtGui.QIcon("./ui/search-icon.svg"))
         self.setIconSize(QtCore.QSize(searchBarHeight*0.75, searchBarHeight*0.75))
+
+        #Signals
+        self.clicked.connect(self.SearchPressed)
+
+    def SearchPressed(self):
+        searchList = SearchGameList(allGames, self.textField.text(), self.associatedList)
+        UpdateListItems(self.associatedList, searchList)
         
         
 
 class SearchBarTextField(QtWidgets.QLineEdit):
     def __init__(self, associatedList: QtWidgets.QListWidget):
         super().__init__()
+        self.associatedList = associatedList
 
         self.setStyleSheet(
             """QLineEdit{
@@ -87,11 +101,11 @@ class SearchBarTextField(QtWidgets.QLineEdit):
                 border-bottom-left-radius: 5px;
                 }"""
         )
-        self.associatedList = associatedList
 
         self.setFixedHeight(searchBarHeight)
         self.setContentsMargins(0,0,0,0)
 
+        #Signals
         self.returnPressed.connect(self.SearchPressed)
 
     def SearchPressed(self):
