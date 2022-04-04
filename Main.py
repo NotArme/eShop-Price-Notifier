@@ -1,5 +1,7 @@
+from asyncio.windows_events import NULL
 from sqlite3 import connect
 import LocalStorage
+import threading
 
 import sys
 from PySide6 import QtWidgets, QtCore, QtGui
@@ -7,6 +9,17 @@ from PySide6 import QtWidgets, QtCore, QtGui
 searchBarHeight = 30
 
 allGames =  LocalStorage.LoadGameList()
+wishlistGames =  LocalStorage.LoadWishlist()
+
+class WishlistWidgetSingleton():
+    def __init__(self):
+        self.instance: GameListWidget
+
+    def Load(self):
+        self.instance = GameListWidget(wishlist=True)
+
+wishlistWidget = WishlistWidgetSingleton()
+
 
 
 class MyWidgetV(QtWidgets.QWidget):
@@ -32,11 +45,22 @@ class LeftHalfWidget(QtWidgets.QWidget):
         super().__init__()
         self.layout = QtWidgets.QVBoxLayout(self)
 
-        gameListWidget = ListWidget()
-        gameListSearchBarWidget = SearchBarWidget(gameListWidget)
+        allListWidget = GameListWidget()
 
-        self.layout.addWidget(gameListSearchBarWidget)
-        self.layout.addWidget(gameListWidget)
+        self.layout.addWidget(allListWidget)
+        self.layout.addWidget(wishlistWidget.instance)
+
+class GameListWidget(QtWidgets.QWidget):
+    def __init__(self, wishlist=False):
+        super().__init__()
+        self.layout = QtWidgets.QVBoxLayout(self)
+
+
+        self.listTitlesWidget = ListWidget(wishlist)
+        self.listSearchBarWidget = SearchBarWidget(self.listTitlesWidget)
+
+        self.layout.addWidget(self.listSearchBarWidget)
+        self.layout.addWidget(self.listTitlesWidget)
 
 class SearchBarWidget(QtWidgets.QWidget):
     def __init__(self, associatedList):
@@ -116,6 +140,7 @@ class SearchBarTextField(QtWidgets.QLineEdit):
 class GameItemOnList(QtWidgets.QWidget):
     def __init__(self, id, title: str):
         super().__init__()
+        self.id = id
         self.layout = QtWidgets.QHBoxLayout(self)
         self.layout.setContentsMargins(10,0,10,0)
         self.setMaximumSize(10000, 50)
@@ -123,23 +148,32 @@ class GameItemOnList(QtWidgets.QWidget):
         self.title = QtWidgets.QLabel(title.encode('latin1').decode('utf8'))
         self.layout.addWidget(self.title)
         self.wishlistButton = QtWidgets.QPushButton("<3")
+        self.wishlistButton.clicked.connect(self.WishlistClicked)
         self.wishlistButton.setFixedSize(20, 20)
         self.layout.addWidget(self.wishlistButton)
+    
+    def WishlistClicked(self):
+        ToggleWishlist(self.id)
 
 class ListWidget(QtWidgets.QListWidget):
-    def __init__(self):
+    def __init__(self, wishlist: bool):
         super().__init__()
         self.setAlternatingRowColors(True)
 
         self.latestSearch = ""
+        self.setUniformItemSizes(True)
+        self.setBatchSize(1000)
 
-        AddItemsToList(self, allGames)
+        if wishlist:
+            AddItemsToList(self, IdListToDict(wishlistGames, allGames))
+        else:
+            AddItemsToList(self, allGames)
 
-def AddItemsToList(listWidg: QtWidgets.QListWidget, gameListToShow):
-    for id in gameListToShow:
+def AddItemsToList(listWidg: QtWidgets.QListWidget, gameDictToShow):
+    for id in gameDictToShow:
         itemlist = QtWidgets.QListWidgetItem()
         itemlist.setSizeHint(QtCore.QSize(10, 25))
-        currentgamewidget = GameItemOnList(id, gameListToShow[id])
+        currentgamewidget = GameItemOnList(id, gameDictToShow[id])
         listWidg.addItem(itemlist)
         listWidg.setItemWidget(itemlist, currentgamewidget)
 
@@ -147,6 +181,8 @@ def UpdateListItems(listWidget: QtWidgets.QListWidget, updatedList: list):
     
     if "dontUpdateSearch" in updatedList:
         return
+    
+    
 
     listWidget.setVisible(False)
     listWidget.setUpdatesEnabled(False)
@@ -175,9 +211,28 @@ def SearchGameList(gameList: dict, searchTerm: str, listWidget: ListWidget):
             searchResult[str(key)] = gameList[str(key)]
     return searchResult
 
+def ToggleWishlist(id):
+    if id in wishlistGames:
+        wishlistGames.remove(id)
+        LocalStorage.CacheWishlist(wishlistGames)
+        wishlistDict = IdListToDict(wishlistGames, allGames)
+        UpdateListItems(wishlistWidget.instance.listTitlesWidget, wishlistDict)
+    else:
+        wishlistGames.append(id)
+        LocalStorage.CacheWishlist(wishlistGames)
+        wishlistDict = IdListToDict(wishlistGames, allGames)
+        UpdateListItems(wishlistWidget.instance.listTitlesWidget, wishlistDict)
+
+def IdListToDict(idlist, allgameslist):
+    idName = {}
+    for id in idlist:
+        idName[id] = allgameslist[id]
+    return idName
+
 def Main():
     app = QtWidgets.QApplication([])
-    
+
+    wishlistWidget.Load()
 
     widget = MyWidgetH()
     widget.setObjectName("mainwindow")

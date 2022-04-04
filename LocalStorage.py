@@ -79,14 +79,20 @@ def LoadIgnoreList():
     if os.path.exists("./gameData/.404list"):
         with open(f"gameData/.404list", "rb") as ignoreListFile:
             list = pickle.load(ignoreListFile)
+            ignoreListFile.close
             return list
     return []
 
-def GetWishlist():
-    if os.path.exists("./gameData/wishlist.json"):
-        with open("./gameData/wishlist.json", "r+") as wishlistFile:
-            wishlist = json.load(wishlistFile)
-            wishlistFile.close()
-    #else:
-        #todo
-    return wishlist
+def CacheWishlist(wishlist):
+    CheckForDataFolder()
+    with open(f"gameData/.wishlist", "wb") as wishlistFile:
+        pickle.dump(wishlist, wishlistFile)
+        wishlistFile.close()
+
+def LoadWishlist():
+    if os.path.exists("./gameData/.wishlist"):
+        with open("./gameData/.wishlist", "rb") as wishlistFile:
+            wishlist: list = pickle.load(wishlistFile)
+            return wishlist
+    else:
+        return []
