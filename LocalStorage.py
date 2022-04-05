@@ -101,4 +101,4 @@ def GetPreviewImage(id):
     if os.path.exists(f".gameData/preview/{id}.jpg"):
         return f".gameData/preview/{id}.jpg"
     else:
-        return ".ui/eshopIcon"
+        return ".ui/eshopIcon.jpg"
