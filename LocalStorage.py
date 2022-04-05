@@ -16,7 +16,7 @@ def SaveImage(url, gameId):
     img = requests.get(url)
     if img.status_code == 200:
         img_data =  img.content
-        with open(f'gameData/{gameId}.jpg', 'wb') as writer:
+        with open(f'gameData/preview/{gameId}.jpg', 'wb') as writer:
             writer.write(img_data)
         print(" --- Image downloaded", end=" ")
     else:
@@ -96,3 +96,9 @@ def LoadWishlist():
             return wishlist
     else:
         return []
+
+def GetPreviewImage(id):
+    if os.path.exists(f".gameData/preview/{id}.jpg"):
+        return f".gameData/preview/{id}.jpg"
+    else:
+        return ".ui/eshopIcon"

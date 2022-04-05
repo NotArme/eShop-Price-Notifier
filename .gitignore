@@ -1,2 +1,5 @@
 gameData/*.json
-gameData/*.jpg
+gameData/.wishlist
+!gameData/.gamedb.json
+*.kra
+*.kra~

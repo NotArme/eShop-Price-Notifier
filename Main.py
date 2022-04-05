@@ -20,19 +20,36 @@ class WishlistWidgetSingleton():
 
 wishlistWidget = WishlistWidgetSingleton()
 
+class GameDataWidgetSingleton():
+    def __init__(self):
+        self.instance: QtWidgets
+
+    def Load(self):
+        self.instance = GameData()
+
+gameDataWidget = GameDataWidgetSingleton()
 
 
-class MyWidgetV(QtWidgets.QWidget):
+
+class GameData(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
+        self.image = GameImage()
         self.button = QtWidgets.QPushButton("Click me!")
         self.text = QtWidgets.QLabel("Hello World",
                                      alignment=QtCore.Qt.AlignCenter)
 
         self.layout = QtWidgets.QVBoxLayout(self)
+        self.layout.addWidget(self.image)
         self.layout.addWidget(self.text)
         self.layout.addWidget(self.button)
+
+class GameImage(QtWidgets.QLabel):
+    def __init__(self):
+        super().__init__()
+        self.previewImage = QtGui.QPixmap("./ui/eshopIcon.jpg")
+        self.setPixmap(self.previewImage)
 
 class MyWidgetH(QtWidgets.QWidget):
     def __init__(self):
@@ -229,10 +246,14 @@ def IdListToDict(idlist, allgameslist):
         idName[id] = allgameslist[id]
     return idName
 
+def ReplaceImage(id, tryhd=False):
+    LocalStorage.GetPreviewImage(id)
+
 def Main():
     app = QtWidgets.QApplication([])
 
     wishlistWidget.Load()
+    gameDataWidget.Load()
 
     widget = MyWidgetH()
     widget.setObjectName("mainwindow")
@@ -240,7 +261,7 @@ def Main():
     widget.setStyleSheet(" QWidget#mainwindow{ background-color: #ffeeea;} ")
     widget.setWindowTitle("eShop Wishlist")
     widget.layout.addWidget(LeftHalfWidget())
-    widget.layout.addWidget(MyWidgetV())
+    widget.layout.addWidget(gameDataWidget.instance)
     widget.resize(800, 600)
     widget.show()
 
