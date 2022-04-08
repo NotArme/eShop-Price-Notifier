@@ -172,6 +172,8 @@ class GameItemOnList(QtWidgets.QWidget):
     def WishlistClicked(self):
         ToggleWishlist(self.id)
 
+
+
 class ListWidget(QtWidgets.QListWidget):
     def __init__(self, wishlist: bool):
         super().__init__()
@@ -181,14 +183,20 @@ class ListWidget(QtWidgets.QListWidget):
         self.setUniformItemSizes(True)
         self.setBatchSize(1000)
 
+        self.currentItemChanged.connect(self.GameSelected)
+
         if wishlist:
             AddItemsToList(self, IdListToDict(wishlistGames, allGames))
         else:
             AddItemsToList(self, allGames)
+    
+    def GameSelected(self, itemselected):
+        ReplaceImage(gameDataWidget.instance.image, itemselected.id, False)
 
 def AddItemsToList(listWidg: QtWidgets.QListWidget, gameDictToShow):
     for id in gameDictToShow:
         itemlist = QtWidgets.QListWidgetItem()
+        itemlist.id = id #doing this so i can get id on ListWidget
         itemlist.setSizeHint(QtCore.QSize(10, 25))
         currentgamewidget = GameItemOnList(id, gameDictToShow[id])
         listWidg.addItem(itemlist)
@@ -246,8 +254,10 @@ def IdListToDict(idlist, allgameslist):
         idName[id] = allgameslist[id]
     return idName
 
-def ReplaceImage(id, tryhd=False):
-    LocalStorage.GetPreviewImage(id)
+def ReplaceImage(imageWidget: QtWidgets.QLabel, id, tryhd=False):
+    previewFilepath = LocalStorage.GetPreviewImage(id)
+    previewImage = QtGui.QPixmap(previewFilepath)
+    imageWidget.setPixmap(previewImage)
 
 def Main():
     app = QtWidgets.QApplication([])
@@ -260,7 +270,8 @@ def Main():
 
     widget.setStyleSheet(" QWidget#mainwindow{ background-color: #ffeeea;} ")
     widget.setWindowTitle("eShop Wishlist")
-    widget.layout.addWidget(LeftHalfWidget())
+    lists = LeftHalfWidget()
+    widget.layout.addWidget(lists)
     widget.layout.addWidget(gameDataWidget.instance)
     widget.resize(800, 600)
     widget.show()

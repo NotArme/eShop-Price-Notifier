@@ -98,7 +98,7 @@ def LoadWishlist():
         return []
 
 def GetPreviewImage(id):
-    if os.path.exists(f".gameData/preview/{id}.jpg"):
-        return f".gameData/preview/{id}.jpg"
+    if os.path.exists(f"./gameData/preview/{id}.jpg"):
+        return f"./gameData/preview/{id}.jpg"
     else:
-        return ".ui/eshopIcon.jpg"
+        return "./ui/eshopIcon.jpg"
