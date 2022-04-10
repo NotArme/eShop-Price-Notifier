@@ -1,4 +1,5 @@
 from asyncio.windows_events import NULL
+from ctypes import alignment
 from sqlite3 import connect
 import LocalStorage
 import threading
@@ -36,14 +37,101 @@ class GameData(QtWidgets.QWidget):
         super().__init__()
 
         self.image = GameImage()
-        self.button = QtWidgets.QPushButton("Click me!")
-        self.text = QtWidgets.QLabel("Hello World",
-                                     alignment=QtCore.Qt.AlignCenter)
+        
+
+        self.lowestPriceNow = "---,-- R$"
+        self.averagePrice = "---,-- R$"
+
+        self.lowestPrice = LowestPrice(self.lowestPriceNow)
+        self.averagePrice = AveragePrice(self.averagePrice)
+
 
         self.layout = QtWidgets.QVBoxLayout(self)
         self.layout.addWidget(self.image)
-        self.layout.addWidget(self.text)
-        self.layout.addWidget(self.button)
+        self.layout.addWidget(self.lowestPrice)
+        self.layout.addWidget(self.averagePrice)
+
+class SmallDescriptionLabel(QtWidgets.QLabel):
+    def __init__(self, text: str, size: int):
+        super().__init__()
+
+        self.setText(text)
+        self.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.font = QtGui.QFont()
+        self.font.setItalic(True)
+        self.font.setPixelSize(size)
+
+        self.setFont(self.font)
+
+class LowestPrice(QtWidgets.QWidget):
+    def __init__(self, lowestPriceNow):
+        super().__init__()
+        self.lowestPriceNow = lowestPriceNow
+
+        self.layout = QtWidgets.QVBoxLayout(self)
+
+        self.layout.addStretch(1)
+
+        self.lowestPriceDesc = SmallDescriptionLabel("Lowest price:", 12)
+        self.layout.addWidget(self.lowestPriceDesc)
+
+        self.priceLabel = LowestPriceValueLabel(self.lowestPriceNow)
+        self.layout.addWidget(self.priceLabel)
+
+        self.layout.addStretch(1)
+
+    def setPrice(self):
+        print()#todo
+
+class AveragePrice(QtWidgets.QWidget):
+    def __init__(self, averagePrice):
+        super().__init__()
+        self.averagePrice = averagePrice
+
+        self.layout = QtWidgets.QVBoxLayout(self)
+        self.layout.setSpacing(1)
+        self.layout.setContentsMargins(0,0,0,0)
+
+        self.layout.addStretch(1)
+
+        self.averagePriceDesc = SmallDescriptionLabel("Average price:", 12)
+        self.layout.addWidget(self.averagePriceDesc)
+
+        self.priceLabel = AveragePriceValueLabel(self.averagePrice)
+        self.layout.addWidget(self.priceLabel)
+
+        self.layout.addStretch(1)
+
+    def setPrice(self):
+        print()#todo
+
+
+class LowestPriceValueLabel(QtWidgets.QLabel):
+    def __init__(self, lowestPriceNow):
+        super().__init__()
+        self.setContentsMargins(0,0,0,0)
+        self.lowestPriceFont = QtGui.QFont()
+        self.lowestPriceFont.setBold(True)
+        self.lowestPriceFont.setPixelSize(38)
+
+        self.setAlignment(QtCore.Qt.AlignBottom)
+
+        self.setText(f"{lowestPriceNow}")
+        self.setFont(self.lowestPriceFont)
+
+class AveragePriceValueLabel(QtWidgets.QLabel):
+    def __init__(self, averagePriceNow):
+        super().__init__()
+        self.averagePriceFont = QtGui.QFont()
+        self.averagePriceFont.setBold(True)
+        self.averagePriceFont.setItalic(True)
+        self.averagePriceFont.setPixelSize(28)
+
+        self.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.setText(f"{averagePriceNow}")
+        self.setFont(self.averagePriceFont)
 
 class GameImage(QtWidgets.QLabel):
     def __init__(self):
