@@ -1,4 +1,6 @@
+from math import floor
 import LocalStorage
+import eShopPage
 import threading
 
 import sys
@@ -36,11 +38,8 @@ class GameData(QtWidgets.QWidget):
         self.image = GameImage()
         
 
-        self.lowestPriceNow = "---,-- R$"
-        self.averagePrice = "---,-- R$"
-
-        self.lowestPrice = LowestPrice(self.lowestPriceNow)
-        self.averagePrice = AveragePrice(self.averagePrice)
+        self.lowestPrice = LowestPrice("---,-- R$")
+        self.averagePrice = AveragePrice("---,-- R$")
 
 
         self.layout = QtWidgets.QVBoxLayout(self)
@@ -72,16 +71,16 @@ class LowestPrice(QtWidgets.QWidget):
 
         self.layout.addStretch(1)
 
-        self.lowestPriceDesc = SmallDescriptionLabel("Lowest price:", 12)
+        self.lowestPriceDesc = SmallDescriptionLabel("Price now:", 12)
         self.layout.addWidget(self.lowestPriceDesc)
 
         self.priceLabel = LowestPriceValueLabel(self.lowestPriceNow)
         self.layout.addWidget(self.priceLabel)
 
-        self.layout.addStretch(1)
+        self.country = SmallDescriptionLabel("n/a", 10)
+        self.layout.addWidget(self.country)
 
-    def setPrice(self):
-        print()#todo
+        self.layout.addStretch(1)
 
 class AveragePrice(QtWidgets.QWidget):
     def __init__(self, averagePrice):
@@ -100,10 +99,6 @@ class AveragePrice(QtWidgets.QWidget):
         self.layout.addWidget(self.priceLabel)
 
         self.layout.addStretch(1)
-
-    def setPrice(self):
-        print()#todo
-
 
 class LowestPriceValueLabel(QtWidgets.QLabel):
     def __init__(self, lowestPriceNow):
@@ -279,6 +274,7 @@ class ListWidget(QtWidgets.QListWidget):
     
     def GameSelected(self, itemselected):
         ReplaceImage(gameDataWidget.instance.image, itemselected.id, False)
+        ReplacePriceData(gameDataWidget.instance, itemselected.id)
 
 def AddItemsToList(listWidg: QtWidgets.QListWidget, gameDictToShow):
     for id in gameDictToShow:
@@ -345,6 +341,17 @@ def ReplaceImage(imageWidget: QtWidgets.QLabel, id, tryhd=False):
     previewFilepath = LocalStorage.GetPreviewImage(id)
     previewImage = QtGui.QPixmap(previewFilepath)
     imageWidget.setPixmap(previewImage)
+
+def ReplacePriceData(dataWidget: GameData, id):
+    gameData = eShopPage.GetGameData(id,365)
+
+    dataWidget.lowestPrice.priceLabel.setText(f"R$ {gameData['lowest price']}")
+
+    avgPrice = gameData["average price"]
+    formattedAvgPrice = str(floor(avgPrice*100)/100).replace(".",",")
+    dataWidget.averagePrice.priceLabel.setText(f"R$ {formattedAvgPrice}")
+
+    dataWidget.lowestPrice.country.setText(gameData["country"])
 
 def Main():
     app = QtWidgets.QApplication([])

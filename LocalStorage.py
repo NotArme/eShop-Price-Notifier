@@ -46,6 +46,12 @@ def RecentDataExists(id):
             gameFile.close()
     return False
 
+def LoadGameData(id):
+    if os.path.exists(f"./gameData/{id}.json"):
+        with open(f"./gameData/{id}.json", "r") as gameFile:
+            gameData = json.load(gameFile)
+            return gameData
+
 def CacheGameData(gId, gData):
     CheckForDataFolder()
     with open(f"gameData/{gId}.json", "w+") as jsonfile:

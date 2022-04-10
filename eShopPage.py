@@ -1,4 +1,5 @@
 #other files from repo
+from Main import allGames
 from LocalStorage import *
 
 #json and html handling
@@ -19,6 +20,13 @@ def CreateSession():
     s = requests.Session()
     s.headers = headers
     return s
+
+class SessionInstance():
+    def __init__(self, session):
+        self.s = session
+
+activeSession = SessionInstance(CreateSession()).s
+
 
 class CountryPrice(dict):
     def __init__(self, country, price):
@@ -52,20 +60,26 @@ def GetLowestPrice(tree):
 
     # Correct items received
     i=0
+    countryFound = False
     while i < len(cheapestItem):
         if cheapestItem[i] == "\n":
             del cheapestItem[i]
             continue
-        cheapestItem[i] = str(cheapestItem[i]).strip("\n").strip("R$") #strip useless chars
-        cheapestItem[i] = str(cheapestItem[i]).replace(",",".") #change cent separator from , to .
+        cheapestItem[i] = str(cheapestItem[i]).strip("\n") #strip useless chars
+        if countryFound: #price always comes after country on array, no use checking for it before finding the country
+            cheapestItem[i] = RemoveNonNumericals(str(cheapestItem[i]))
+            cheapestItem[i] = str(int(cheapestItem[i])/100) #adding back separator
+        countryFound = True
         i += 1
 
 
     testprice = CountryPrice(cheapestItem[0], cheapestItem[1])
     return testprice
 
-def GetAveragePrice(daysToEvaluate: int, gameId: int):
-    priceList = requests.get("https://charts.eshop-prices.com/prices/" + str(gameId) +"?currency=BRL", headers=userAgent)
+def GetAveragePrice(daysToEvaluate: int, gameId: int, session: requests.Session):
+    priceList = session.get("https://charts.eshop-prices.com/prices/" + str(gameId) +"?currency=BRL")
+    if priceList.status_code != 200:
+        return 0
     priceListDecoded : list = ast.literal_eval(priceList.text)
     datetimeForEvaluation = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=daysToEvaluate)
 
@@ -77,7 +91,7 @@ def GetAveragePrice(daysToEvaluate: int, gameId: int):
     averagePrice: float = 0
 
     for entry in priceListDecoded:
-        #value is received as an int, dividing by 100 correctly sets them to cents
+        #value is received as an int, dividing by 100 correctly sets them to brazilian cents
         averagePrice += (entry["value"]/100)
     averagePrice /= len(priceListDecoded)
 
@@ -88,26 +102,43 @@ def GetAveragePrice(daysToEvaluate: int, gameId: int):
     #return bool
     #true if cheaper than price marked on wishlist
 
-def GetGameData(gameId, tree, daysToEvaluate):
-    gameName = GetGameName(tree)
-    imageBytes = GetImage(tree)
-    cp = GetLowestPrice(tree)
-    ap = GetAveragePrice(daysToEvaluate, gameId)
+def GetGameData(gameId, daysToEvaluate):
+    if (RecentDataExists(gameId) != False):
+        return LoadGameData(gameId)
+
+    tree, resp = GetPage(gameId, activeSession)
+    if resp.status_code != 200:
+        cp = CountryPrice("not found", 000.00)
+    else:
+        cp = GetLowestPrice(tree)
+
+    ap = GetAveragePrice(daysToEvaluate, gameId, activeSession)
+    #todo: hdimage
 
     gameData = {
-        "game": gameName,
+        "game": allGames[gameId ],
         "country": cp["country"],
         "lowest price": cp["price"],
         "average price": ap,
         "received date": str(datetime.datetime.now(datetime.timezone.utc))
     }
+
+    CacheGameData(gameId, gameData)
     
     return gameData
 
 def LoadWishlist(wishlist):
     for game in wishlist:
-        if (RecentDataExists(game["gameId"]) == False):
-            tree = GetPage(game["gameId"])[0]
-            gameData = GetGameData(game["gameId"], tree, 365)
+        
+            
+            gameData = GetGameData(game["gameId"], 365)
 
             CacheGameData(game["gameId"], gameData)
+
+
+def RemoveNonNumericals(string: str) -> str:
+    result = ''
+    for char in string:
+        if char in '1234567890':
+            result += char
+    return result
