@@ -55,6 +55,7 @@ class SmallDescriptionLabel(QtWidgets.QLabel):
     def __init__(self, text: str, size: int):
         super().__init__()
 
+        self.setContentsMargins(0,0,0,0)
         self.setText(text)
         self.setAlignment(QtCore.Qt.AlignCenter)
 
@@ -70,6 +71,7 @@ class LowestPrice(QtWidgets.QWidget):
         self.lowestPriceNow = lowestPriceNow
 
         self.layout = QtWidgets.QVBoxLayout(self)
+        self.layout.setContentsMargins(0,0,0,0)
 
         self.layout.addStretch(1)
 
@@ -90,7 +92,6 @@ class AveragePrice(QtWidgets.QWidget):
         self.averagePrice = averagePrice
 
         self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.setSpacing(1)
         self.layout.setContentsMargins(0,0,0,0)
 
         self.layout.addStretch(1)
@@ -123,6 +124,7 @@ class LowestPriceValueLabel(QtWidgets.QLabel):
 class AveragePriceValueLabel(QtWidgets.QLabel):
     def __init__(self, averagePriceNow):
         super().__init__()
+        self.setContentsMargins(0,0,0,0)
         self.averagePriceFont = QtGui.QFont()
         self.averagePriceFont.setBold(True)
         self.averagePriceFont.setItalic(True)
