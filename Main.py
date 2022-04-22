@@ -255,6 +255,7 @@ class GameItemOnList(QtWidgets.QWidget):
     
     def WishlistClicked(self):
         ToggleWishlist(self.id)
+        ThreadedFunction(wishlistWidget.instance.listTitlesWidget.LoadWishlistData)
 
 
 
@@ -271,20 +272,19 @@ class ListWidget(QtWidgets.QListWidget):
 
         if wishlist:
             AddItemsToList(self, IdListToDict(wishlistGames, allGames))
-            dataThread = threading.Thread(target=self.LoadWishlistData)
-            dataThread.start()
+            ThreadedFunction(self.LoadWishlistData)
         else:
             AddItemsToList(self, allGames)
 
     def LoadWishlistData(self):
         for i in range(self.count()):
-            sleep(1)
             gameData = eShopPage.GetGameData(self.item(i).id,365)
             self.item(i).setBackground(QtGui.QBrush(QtGui.QColor(Polish.GetBackgroundColor(float(gameData['lowest price'].replace('R$','')), gameData['average price']))))
     
     def GameSelected(self, itemselected):
-        ReplaceImage(gameDataWidget.instance.image, itemselected.id, False)
-        ReplacePriceData(gameDataWidget.instance, itemselected.id)
+        if itemselected != None:
+            ReplaceImage(gameDataWidget.instance.image, itemselected.id, False)
+            ReplacePriceData(gameDataWidget.instance, itemselected.id)
 
 def AddItemsToList(listWidg: QtWidgets.QListWidget, gameDictToShow):
     for id in gameDictToShow:
@@ -363,6 +363,10 @@ def ReplacePriceData(dataWidget: GameData, id):
     dataWidget.averagePrice.priceLabel.setText(f"R$ {formattedAvgPrice}")
 
     dataWidget.lowestPrice.country.setText(gameData["country"])
+
+def ThreadedFunction(function):
+    dataThread = threading.Thread(target=function)
+    dataThread.start()
 
 def Main():
     app = QtWidgets.QApplication([])

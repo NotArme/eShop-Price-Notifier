@@ -105,10 +105,11 @@ def GetAveragePrice(daysToEvaluate: int, gameId: int, session: requests.Session)
     #return bool
     #true if cheaper than price marked on wishlist
 
-def GetGameData(gameId, daysToEvaluate):
+def GetGameData(gameId, daysToEvaluate, sleep = False):
     if (RecentDataExists(gameId) != False):
         return LoadGameData(gameId)
-
+    if sleep:
+        sleep(1) #sleeping a bit to avoid getting blocked for too many requests
     tree, resp = GetPage(gameId, activeSession)
     if resp.status_code != 200:
         cp = CountryPrice("not found", 000.00)
