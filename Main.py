@@ -1,4 +1,5 @@
 from math import floor
+from time import sleep
 import LocalStorage
 import eShopPage
 import Polish
@@ -270,8 +271,16 @@ class ListWidget(QtWidgets.QListWidget):
 
         if wishlist:
             AddItemsToList(self, IdListToDict(wishlistGames, allGames))
+            dataThread = threading.Thread(target=self.LoadWishlistData)
+            dataThread.start()
         else:
             AddItemsToList(self, allGames)
+
+    def LoadWishlistData(self):
+        for i in range(self.count()):
+            sleep(1)
+            gameData = eShopPage.GetGameData(self.item(i).id,365)
+            self.item(i).setBackground(QtGui.QBrush(QtGui.QColor(Polish.GetBackgroundColor(float(gameData['lowest price'].replace('R$','')), gameData['average price']))))
     
     def GameSelected(self, itemselected):
         ReplaceImage(gameDataWidget.instance.image, itemselected.id, False)
@@ -369,7 +378,7 @@ def Main():
     lists = LeftHalfWidget()
     widget.layout.addWidget(lists)
     widget.layout.addWidget(gameDataWidget.instance)
-    widget.resize(800, 600)
+    widget.resize(1000, 600)
     widget.show()
 
     sys.exit(app.exec())

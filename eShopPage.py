@@ -72,7 +72,8 @@ def GetLowestPrice(tree):
         countryFound = True
         i += 1
 
-
+    if len(cheapestItem) < 2:
+        return CountryPrice("Not Found", "00.00")
     testprice = CountryPrice(cheapestItem[0], cheapestItem[1])
     return testprice
 
@@ -81,6 +82,8 @@ def GetAveragePrice(daysToEvaluate: int, gameId: int, session: requests.Session)
     if priceList.status_code != 200:
         return 0
     priceListDecoded : list = ast.literal_eval(priceList.text)
+    if len(priceListDecoded) == 0:
+        return 0
     datetimeForEvaluation = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=daysToEvaluate)
 
     for entry in priceListDecoded:
