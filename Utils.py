@@ -32,6 +32,9 @@ def Lerp(valA: Union[list, float, int], valB: Union[list, float, int], t: float)
 def _lerpSingleVal(valA: float, valB: float, t: float) -> float:
     return round(valA + (valB - valA) * t, 6)
 
+def InverseLerp(valA: float, valB: float, valX: float):
+    return round((valX - valA) / (valB - valA), 6)
+
 def LerpHex(valA: str, valB: str, t: float) -> str:
     return RgbToHex(Lerp(HexToRgb(valA), HexToRgb(valB), t))
 
@@ -50,3 +53,4 @@ def RgbToHex(rgbcode: list[int]) -> str:
         col = round(col)
         hex += f"{col:02x}"
     return hex
+

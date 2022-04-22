@@ -1,6 +1,7 @@
 from math import floor
 import LocalStorage
 import eShopPage
+import Polish
 import threading
 
 import sys
@@ -346,6 +347,7 @@ def ReplacePriceData(dataWidget: GameData, id):
     gameData = eShopPage.GetGameData(id,365)
 
     dataWidget.lowestPrice.priceLabel.setText(f"R$ {gameData['lowest price']}")
+    dataWidget.lowestPrice.priceLabel.setStyleSheet(f"color: {Polish.GetTextColor(float(gameData['lowest price'].replace('R$','')), gameData['average price'])};")
 
     avgPrice = gameData["average price"]
     formattedAvgPrice = str(floor(avgPrice*100)/100).replace(".",",")
