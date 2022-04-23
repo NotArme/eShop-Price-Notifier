@@ -1,11 +1,13 @@
-from math import floor
-from time import sleep
 import LocalStorage
 import eShopPage
 import Polish
-import threading
+from ChartWidget import PriceChart
 
+from math import floor
+
+import threading
 import sys
+
 from PySide6 import QtWidgets, QtCore, QtGui
 
 searchBarHeight = 30
@@ -40,7 +42,8 @@ class GameData(QtWidgets.QWidget):
         self.setContentsMargins(0,45,0,10)
 
         self.image = GameImage()
-        
+
+        self.chart = PriceChart()
 
         self.lowestPrice = LowestPrice("---,-- R$")
         self.averagePrice = AveragePrice("---,-- R$")
@@ -51,6 +54,7 @@ class GameData(QtWidgets.QWidget):
         self.layout.addWidget(self.image)
         self.layout.addWidget(self.lowestPrice)
         self.layout.addWidget(self.averagePrice)
+        self.layout.addWidget(self.chart.chartView)
 
 class SmallDescriptionLabel(QtWidgets.QLabel):
     def __init__(self, text: str, size: int):
@@ -288,7 +292,9 @@ class ListWidget(QtWidgets.QListWidget):
     def GameSelected(self, itemselected):
         if itemselected != None:
             ReplaceImage(gameDataWidget.instance.image, itemselected.id, False)
-            ReplacePriceData(gameDataWidget.instance, itemselected.id)
+            gameData = eShopPage.GetGameData(itemselected.id,365)
+            ReplacePriceData(gameDataWidget.instance, gameData)
+            ReplaceChart(gameDataWidget.instance.chart, gameData)
 
 def AddItemsToList(listWidg: QtWidgets.QListWidget, gameDictToShow):
     for id in gameDictToShow:
@@ -356,9 +362,7 @@ def ReplaceImage(imageWidget: QtWidgets.QLabel, id, tryhd=False):
     previewImage = QtGui.QPixmap(previewFilepath)
     imageWidget.setPixmap(previewImage)
 
-def ReplacePriceData(dataWidget: GameData, id):
-    gameData = eShopPage.GetGameData(id,365)
-
+def ReplacePriceData(dataWidget: GameData, gameData):
     dataWidget.lowestPrice.priceLabel.setText(f"R$ {gameData['lowest price']}")
     dataWidget.lowestPrice.priceLabel.setStyleSheet(f"color: {Polish.GetTextColor(float(gameData['lowest price'].replace('R$','')), gameData['average price'])};")
 
@@ -367,6 +371,11 @@ def ReplacePriceData(dataWidget: GameData, id):
     dataWidget.averagePrice.priceLabel.setText(f"R$ {formattedAvgPrice}")
 
     dataWidget.lowestPrice.country.setText(gameData["country"])
+
+def ReplaceChart(chartWidget: PriceChart, gameData):
+    chartWidget.removeAllSeries()
+    chartWidget.PaintChart(gameData["price history"])
+
 
 def ThreadedFunction(function):
     dataThread = threading.Thread(target=function)
