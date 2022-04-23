@@ -50,10 +50,15 @@ class GameData(QtWidgets.QWidget):
 
         self.setMinimumWidth(250)
 
+        self.priceWidgets = QtWidgets.QWidget(self)
+
         self.layout = QtWidgets.QVBoxLayout(self)
+        self.priceLayout = QtWidgets.QHBoxLayout()
+
         self.layout.addWidget(self.image)
-        self.layout.addWidget(self.lowestPrice)
-        self.layout.addWidget(self.averagePrice)
+        self.layout.addLayout(self.priceLayout)
+        self.priceLayout.addWidget(self.lowestPrice)
+        self.priceLayout.addWidget(self.averagePrice)
         self.layout.addWidget(self.chart.chartView)
 
 class SmallDescriptionLabel(QtWidgets.QLabel):

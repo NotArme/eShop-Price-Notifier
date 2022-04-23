@@ -10,7 +10,7 @@ class PriceChart(QtCharts.QChart):
 
         self.setBackgroundBrush(QtGui.QBrush(QtGui.QColor("#fff9fb")))
         self.setBackgroundPen(QtGui.QPen(QtGui.QColor("#f05555")))
-        self.setMargins(QtCore.QMargins(0,0,0,0))
+        self.setMargins(QtCore.QMargins(1,5,1,5))
 
         #both of these doesnt seem to do anything in this theme, just keeping here for reference later
         #self.setPlotAreaBackgroundBrush(QtGui.QBrush(QtGui.QColor("#00fbff")))
