@@ -37,12 +37,15 @@ class GameData(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
+        self.setContentsMargins(0,45,0,10)
+
         self.image = GameImage()
         
 
         self.lowestPrice = LowestPrice("---,-- R$")
         self.averagePrice = AveragePrice("---,-- R$")
 
+        self.setMinimumWidth(250)
 
         self.layout = QtWidgets.QVBoxLayout(self)
         self.layout.addWidget(self.image)
@@ -110,7 +113,7 @@ class LowestPriceValueLabel(QtWidgets.QLabel):
         self.lowestPriceFont.setBold(True)
         self.lowestPriceFont.setPixelSize(38)
 
-        self.setAlignment(QtCore.Qt.AlignBottom)
+        self.setAlignment(QtCore.Qt.AlignHCenter)
 
         self.setText(f"{lowestPriceNow}")
         self.setFont(self.lowestPriceFont)
@@ -132,6 +135,7 @@ class AveragePriceValueLabel(QtWidgets.QLabel):
 class GameImage(QtWidgets.QLabel):
     def __init__(self):
         super().__init__()
+        self.setAlignment(QtCore.Qt.AlignCenter)
         self.previewImage = QtGui.QPixmap("./ui/eshopIcon.jpg")
         self.setPixmap(self.previewImage)
 
