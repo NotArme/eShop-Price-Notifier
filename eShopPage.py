@@ -77,26 +77,32 @@ def GetLowestPrice(tree):
     testprice = CountryPrice(cheapestItem[0], cheapestItem[1])
     return testprice
 
-def GetAveragePrice(daysToEvaluate: int, gameId: int, session: requests.Session):
+def GetPriceHistory(daysToEvaluate: int, gameId: int, session: requests.Session):
     priceList = session.get("https://charts.eshop-prices.com/prices/" + str(gameId) +"?currency=BRL")
     if priceList.status_code != 200:
-        return 0
+        return {}
     priceListDecoded : list = ast.literal_eval(priceList.text)
     if len(priceListDecoded) == 0:
-        return 0
+        return {}
     datetimeForEvaluation = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=daysToEvaluate)
 
     for entry in priceListDecoded:
         entry["date"] = parser.parse(entry["date"])
         if entry["date"] < datetimeForEvaluation:
             priceListDecoded.remove(entry)
+    
+    return priceListDecoded
+
+def GetAveragePrice(priceHistory):
+    if len(priceHistory) == 0:
+        return 00.00
 
     averagePrice: float = 0
 
-    for entry in priceListDecoded:
+    for entry in priceHistory:
         #value is received as an int, dividing by 100 correctly sets them to brazilian cents
         averagePrice += (entry["value"]/100)
-    averagePrice /= len(priceListDecoded)
+    averagePrice /= len(priceHistory)
 
     return averagePrice
 
@@ -116,7 +122,8 @@ def GetGameData(gameId, daysToEvaluate, sleep = False):
     else:
         cp = GetLowestPrice(tree)
 
-    ap = GetAveragePrice(daysToEvaluate, gameId, activeSession)
+    ph = GetPriceHistory(daysToEvaluate, gameId, activeSession)
+    ap = GetAveragePrice(ph)
     #todo: hdimage
 
     gameData = {
@@ -124,7 +131,8 @@ def GetGameData(gameId, daysToEvaluate, sleep = False):
         "country": cp["country"],
         "lowest price": cp["price"],
         "average price": ap,
-        "received date": str(datetime.datetime.now(datetime.timezone.utc))
+        "received date": str(datetime.datetime.now(datetime.timezone.utc)),
+        "price history": ph
     }
 
     CacheGameData(gameId, gameData)

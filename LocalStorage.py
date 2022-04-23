@@ -1,5 +1,5 @@
 #file to dump methods pertaining to local storage
-#mainly used as a cache so requests are'nt used more than is actually needed
+#mainly used as a cache so requests aren't used more than is actually needed
 
 import os
 
@@ -55,7 +55,7 @@ def LoadGameData(id):
 def CacheGameData(gId, gData):
     CheckForDataFolder()
     with open(f"gameData/{gId}.json", "w+") as jsonfile:
-        json.dump(gData, jsonfile)
+        json.dump(gData, jsonfile, indent=4, sort_keys=True, default=str)
         jsonfile.close()
 
 def CacheGameList(gamedict):
