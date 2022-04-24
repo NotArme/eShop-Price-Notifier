@@ -1,5 +1,4 @@
 gameData/*.json
 gameData/.wishlist
 !gameData/.gamedb.json
-*.kra
-*.kra~
+dist
