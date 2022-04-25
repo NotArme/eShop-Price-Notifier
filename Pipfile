@@ -9,6 +9,7 @@ lxml = "*"
 requests-html = "*"
 python-dateutil = "*"
 pyside6 = "*"
+py2exe = "*"
 
 [dev-packages]
 

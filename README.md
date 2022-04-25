@@ -8,3 +8,5 @@ This project was made mainly as a way to learn the Qt api
 All data is gathered from https://eshop-prices.com/
 
 All prices are in BRL, I may add conversion to other currencies if requested
+
+An windows executable can be found on Releases, otherwise, it can be created by running ```python setup.py py2exe``` on this directory

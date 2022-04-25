@@ -1,3 +1,4 @@
+import os
 from typing import Union
 
 def Lerp(valA: Union[list, float, int], valB: Union[list, float, int], t: float) -> Union[list, float]:
@@ -54,3 +55,10 @@ def RgbToHex(rgbcode: list[int]) -> str:
         hex += f"{col:02x}"
     return hex
 
+def GetAllFilepathsOnDir(dir: str) -> list:
+    filepaths = []
+    for file in os.listdir(dir):
+        filepath = f"{dir}/{file}"
+        if os.path.isfile(filepath):
+            filepaths.append(filepath)
+    return filepaths
