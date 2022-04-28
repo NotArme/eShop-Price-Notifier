@@ -2,3 +2,4 @@ gameData/*.json
 gameData/.wishlist
 !gameData/.gamedb.json
 dist
+build
