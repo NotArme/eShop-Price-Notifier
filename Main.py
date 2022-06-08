@@ -386,6 +386,15 @@ def ThreadedFunction(function):
     dataThread = threading.Thread(target=function)
     dataThread.start()
 
+def SetAppIcon(app: QtWidgets.QApplication):
+    app_icon = QtGui.QIcon()
+    app_icon.addFile('icons/MainIcon.png', QtCore.QSize(16,16))
+    app_icon.addFile('icons/MainIcon.png', QtCore.QSize(24,24))
+    app_icon.addFile('icons/MainIcon.png', QtCore.QSize(32,32))
+    app_icon.addFile('icons/MainIcon.png', QtCore.QSize(48,48))
+    app_icon.addFile('icons/MainIcon.png', QtCore.QSize(256,256))
+    app.setWindowIcon(app_icon)
+
 def Main():
     app = QtWidgets.QApplication([])
 
@@ -403,6 +412,7 @@ def Main():
     widget.resize(1000, 600)
     widget.show()
 
+    SetAppIcon(app)
     sys.exit(app.exec())
 
 
