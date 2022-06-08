@@ -7,6 +7,7 @@ from cx_Freeze import setup, Executable
 dataFiles = ["./gameData/.404list", "./gameData/.gamedb.json"]
 uiPath = "./ui"
 previewImagesPath = "./gameData/preview"
+iconsPath = "./icons"
 
 def CxfreezeIncludeFilesInput(filepathList: str):
       endlist = []
@@ -19,6 +20,7 @@ includeFiles = []
 includeFiles.extend(CxfreezeIncludeFilesInput(dataFiles))
 includeFiles.extend(CxfreezeIncludeFilesInput(GetAllFilepathsOnDir(uiPath)))
 includeFiles.extend(CxfreezeIncludeFilesInput(GetAllFilepathsOnDir(previewImagesPath)))
+includeFiles.extend(CxfreezeIncludeFilesInput(GetAllFilepathsOnDir(iconsPath)))
 
 build_exe_options = {"excludes": ["tkinter", "unittest"],
                      "include_files": includeFiles,
