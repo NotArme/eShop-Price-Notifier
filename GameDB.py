@@ -76,5 +76,5 @@ def AddIdsToIgnoreList(id, badResponses, list):
         list.append(id)
     LocalStorage.CacheIgnoreList(list)
 
-
-UpdateLocalGameDB(3000)
+if __name__ == "__main__":
+    UpdateLocalGameDB(3000)

@@ -29,7 +29,7 @@ setup(name='eShop Tracker',
       description='Simple software to track prices on nintendo switch e-shop',
       author='NotArme',
       options={"build_exe": build_exe_options},
-      executables = [Executable("Main.py")],
+      executables= [Executable("Main.py", base = "Win32GUI"), Executable("GameDB.py")],
       package_dir={"": ""})
 
 
